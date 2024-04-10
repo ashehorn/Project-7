@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int            @id @default(autoincrement())
+  first_name    String
+  last_name     String
+  username      String         @unique
+  email         String         @unique
+  password      String
+  profile_img   String //Image URL
+  preferences   Json
+  userFriends   UserFriend[]   @relation("UserToUserFriend")
+  friendUsers   UserFriend[]   @relation("UserFriendToUser")
+  posts         Post[]
+  likedPosts    Post[]         @relation("Likes")
+  dislikedPosts Post[]         @relation("Dislikes")
+  comments      PostComments[]
+}
+
+model UserFriend {
+  userId   Int
+  friendId Int
+  user     User @relation(fields: [userId], references: [id], name: "UserToUserFriend")
+  friend   User @relation(fields: [friendId], references: [id], name: "UserFriendToUser")
+
+  @@id([userId, friendId])
+}
+
+model Post {
+  id               Int            @id @default(autoincrement())
+  created_by       Int
+  created_datetime DateTime
+  post_data        Json //title, body, likes, dislikes etc
+  media            PostMedia[]
+  likes            User[]         @relation("Likes")
+  dislikes         User[]         @relation("Dislikes")
+  comments         PostComments[]
+  author           User           @relation(fields: [created_by], references: [id])
+
+  @@unique([created_by, created_datetime])
+}
+
+model PostMedia {
+  id     Int    @id @default(autoincrement())
+  post   Post   @relation(fields: [postId], references: [id])
+  postId Int
+  media  String //img URL
+}
+
+model PostComments {
+  id               Int      @id @default(autoincrement())
+  post             Post     @relation(fields: [postId], references: [id])
+  postId           Int
+  user_comment_id  Int
+  created_datetime DateTime
+  comment_body     String
+  author           User     @relation(fields: [user_comment_id], references: [id])
+}

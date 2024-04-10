@@ -1,0 +1,22 @@
+{
+  "name": "back",
+  "version": "1.0.0",
+  "description": "React social media fullstack",
+  "main": "app.ts",
+  "scripts": {
+    "start": "node app.ts",
+    "dev": "nodemon app.ts"
+  },
+  "author": "Alec Shehorn",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2",
+    "nodemon": "^3.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.4",
+    "prisma": "^5.12.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.4"
+  }
+}
