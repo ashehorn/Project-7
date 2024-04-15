@@ -10,6 +10,7 @@
   "author": "Alec Shehorn",
   "license": "ISC",
   "dependencies": {
+    "@prisma/client": "^5.12.1",
     "express": "^4.19.2",
     "nodemon": "^3.1.0"
   },
