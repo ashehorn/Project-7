@@ -1,7 +1,6 @@
-const express = require('express');
+import express from "express";
 
-
-const router = express.router();
+const router = express.Router();
 
 router.get('/:id', getUser);
 
