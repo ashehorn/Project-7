@@ -1,19 +1,15 @@
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
+import dotenv from "dotenv";
+import login from "./routes/auth/login";
+import register from "./routes/auth/register";
+import post from "./routes/post";
+import user from "./routes/user";
 
-require("dotenv").config();
-
-// Auth
-const login = require("./routes/auth/login");
-const register = require("./routes/auth/register");
-// post
-const post = require("./routes/post");
-// user
-const user = require("./routes/user");
+dotenv.config();
 
 const app = express();
-
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
