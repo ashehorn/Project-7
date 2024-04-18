@@ -5,6 +5,7 @@
   "main": "app.ts",
   "scripts": {
     "build": "npx tsc",
+    "prestart": "npm run build",
     "start": "node dist/app.js",
     "dev": "npx tsc -w & nodemon dist/app.js"
   },
