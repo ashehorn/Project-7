@@ -1,2 +1,0 @@
-const prisma = require('prisma');
-
