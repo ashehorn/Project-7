@@ -1,2 +1,0 @@
-const webToken = require('jsonwebtoken');
-

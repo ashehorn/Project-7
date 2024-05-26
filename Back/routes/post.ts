@@ -1,15 +1,27 @@
 import express from "express";
+import multer from "multer";
+import { validateAccessToken } from "../middleware/auth.tokens";
+import {
+	getPosts,
+	getPost,
+	createPost,
+	updatePost,
+	deletePost,
+} from "../controllers/post";
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 const router = express.Router();
 
-router.get("/", (req, res) => {});
+router.get("/", validateAccessToken, getPosts);
 
-router.get("/:id", (req, res) => {});
+router.get("/:id", validateAccessToken, getPost);
 
-router.post("/", (req, res) => {});
+router.post("/", validateAccessToken, upload.array("media", 5), createPost);
 
-router.delete("/:id", (req, res) => {});
+router.delete("/:id", validateAccessToken, deletePost);
 
-router.put("/:id", (req, res) => {});
+router.put("/:id", validateAccessToken, upload.array("media", 5), updatePost);
 
 export default router;

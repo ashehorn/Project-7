@@ -1,2 +1,2 @@
 "use strict";
-const jwt = require("jsonwebtoken");
+Object.defineProperty(exports, "__esModule", { value: true });
