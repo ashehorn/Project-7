@@ -1,7 +1,7 @@
 import { NextFunction, Response, Request } from "express";
 import jwt, { Secret, JwtPayload } from "jsonwebtoken";
 import dotenv from "dotenv";
-import { todo } from "node:test";
+import cookieParser from "cookie-parser";
 
 dotenv.config();
 
@@ -21,14 +21,14 @@ export const validateAccessToken = (
 
 	if (!authHeader) {
 		console.warn(ERROR_MESSAGES.INVALID_TOKEN);
-		return res.redirect("/login"); // Redirect to login URL
+		return res.redirect("http://localhost:5173/login"); // Redirect to login URL
 	}
 
 	const token = authHeader.split(" ")[1];
 
 	if (!token) {
 		console.warn(ERROR_MESSAGES.INVALID_TOKEN);
-		return res.redirect("/login"); // Redirect to login URL
+		return res.redirect("http://localhost:5173/login"); // Redirect to login URL
 	}
 
 	try {
@@ -37,7 +37,7 @@ export const validateAccessToken = (
 		next();
 	} catch (error) {
 		console.warn(ERROR_MESSAGES.INVALID_TOKEN);
-		return res.redirect("/login");
+		return res.redirect("http://localhost:5173/login");
 	}
 };
 
@@ -94,5 +94,9 @@ export async function create(res: Response, user: any) {
 		{ expiresIn: "15m" }
 	);
 
-	return res.json({ accessToken });
+	return res.cookie("accessToken", accessToken, {
+		httpOnly: true,
+		sameSite: "strict",
+		secure: true,
+	});
 }

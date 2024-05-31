@@ -16,39 +16,37 @@ interface UserInfo {
 	email: string;
 	password: string;
 }
+async function hash(password: string): Promise<string> {
+	try {
+		const hashedPassword = await hashPassword(password);
+		if (hashedPassword instanceof Error) {
+			throw hashedPassword;
+		}
+		return hashedPassword;
+	} catch (error) {
+		console.error("Error hashing password:", error);
+		throw new Error("Failed to hash password");
+	}
+}
 
 export async function register(req: Request, res: Response) {
 	try {
 		const { first_name, last_name, username, email, password } =
 			req.body as UserInfo;
 
-		// Log the request body to verify the values
 		console.log("Request body:", req.body);
 
-		// Check if email is defined
 		if (!email) {
 			return res.status(400).json({ error: "Email is required" });
 		}
 
-		let existingUserByEmail;
-		try {
-			existingUserByEmail = await prisma.user.findUnique({
-				where: { email },
-			});
-		} catch (error) {
-			console.error("Error finding user by email:", error);
-			return res.status(500).json({ error: "Server error" });
-		}
+		const existingUserByEmail = await prisma.user.findUnique({
+			where: { email },
+		});
 
-		let existingUserByUsername;
-		try {
-			existingUserByUsername = await prisma.user.findUnique({
-				where: { username },
-			});
-		} catch (error) {
-			console.error("Error finding user by username:", error);
-			return res.status(500).json({ error: "Server error" });
-		}
+		const existingUserByUsername = await prisma.user.findUnique({
+			where: { username },
+		});
 
 		if (!validateEmail(email) || !validatePassword(password)) {
 			return res
@@ -68,49 +66,31 @@ export async function register(req: Request, res: Response) {
 				.json({ error: "User with this username already exists" });
 		}
 
-		let passwordHash;
-		try {
-			passwordHash = await hashPassword(password);
-		} catch (error) {
-			console.error("Error hashing password:", error);
-			return res.status(500).json({ error: "Server error" });
-		}
+		const passwordHash = await hash(password);
 
-		let user;
-		if (typeof passwordHash === "string") {
-			try {
-				user = await prisma.user.create({
-					data: {
-						first_name,
-						last_name,
-						username,
-						email,
-						password: passwordHash,
-						profile_img: "defaultProfileImg.jpg",
-						preferences: {},
-					},
-				});
-			} catch (error) {
-				console.error("Error creating user:", error);
-				return res.status(500).json({ error: "Server error" });
-			}
-		} else {
-			console.error("Error hashing password:", passwordHash);
-			return res.status(500).json({ error: "Server error" });
-		}
+		const user = await prisma.user.create({
+			data: {
+				first_name,
+				last_name,
+				username,
+				email,
+				password: passwordHash,
+				profile_img: "defaultProfileImg.jpg",
+				preferences: {},
+			},
+		});
 
-		res.status(201).json({
+		create(res, user);
+		return res.status(201).json({
 			message: "User created successfully",
 			user: {
 				id: user.id,
 				username: user.username,
 				email: user.email,
 			},
-			// Do I need to issue access token on registration?
-			accessToken: create(res, user),
 		});
 	} catch (error) {
 		console.error(error);
-		res.status(500).json({ error: "Server error" });
+		return res.status(500).json({ error: "Server error" });
 	}
 }

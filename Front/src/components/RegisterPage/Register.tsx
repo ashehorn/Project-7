@@ -17,6 +17,7 @@ export default function Register() {
                 email: formData.get('email'),
                 password: formData.get('password'),
             };
+
             try {
                 const response = await fetch('http://localhost:3000/api/auth/register', {
                     method: 'POST',
@@ -24,12 +25,13 @@ export default function Register() {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify(data),
+                    credentials: 'include',
                 });
                 const result = await response.json();
                 if (response.ok) {
-                    // Need to get the token from the response, save it in local storage, then redirect the user to the dashboard.
                     setResponseMessage(result.message || 'Registration successful!');
                     setErrorMessage(null);
+                    localStorage.setItem('userId', result.user.id);
                     window.location.href = 'http://localhost:5173/';
                 } else {
                     setErrorMessage(result.error || 'Registration failed.');
@@ -49,9 +51,9 @@ export default function Register() {
             <form className='register-form' method='post' onSubmit={handleSubmit}>
                 <input className='reg-input' type="text" name='fname' placeholder='First Name' required />
                 <input className='reg-input' type="text" name='lname' placeholder='Last Name' required />
-                <input className='reg-input' type="text" name='username' placeholder='Username' required />
-                <input className='reg-input' type="email" name='email' placeholder='Email'/>
-                <input className='reg-input' type="password" name='password' placeholder='Password' required />
+                <input className='reg-input' type='text' name='username' placeholder='Username' required />
+                <input className='reg-input' type='email' name='email' placeholder='Email' required />
+                <input className='reg-input' type='password' name='password' placeholder='Password' required />
                 <button className="submit" type="submit">Submit</button>
             </form>
             {responseMessage && <div className="success-message">{responseMessage}</div>}

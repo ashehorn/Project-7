@@ -73,34 +73,39 @@ export async function createPost(req: Request, res: Response) {
 			likes = [],
 			dislikes = [],
 			comments = [],
-			author,
 		} = req.body;
+
+		const createdBy = parseInt(created_by);
+
+		if (isNaN(createdBy)) {
+			return res
+				.status(400)
+				.json({ error: "Invalid created_by or author ID" });
+		}
 
 		let mediaUrls: string[] = [];
 
 		if (req.files) {
-			const uploadPromises = Object.values(req.files).map(
-				async (file: any) => {
-					const imageName = randomImageName();
-					const params = {
-						Bucket: bucketName,
-						Key: imageName,
-						Body: file.buffer,
-						ACL: "public-read" as ObjectCannedACL,
-						ContentType: file.mimetype,
-					};
+			const files = req.files as Express.Multer.File[];
+			const uploadPromises = files.map(async (file) => {
+				const imageName = randomImageName();
+				const params = {
+					Bucket: bucketName,
+					Key: imageName,
+					Body: file.buffer,
+					ContentType: file.mimetype,
+				};
 
-					await s3Client.send(new PutObjectCommand(params));
-					return imageName;
-				}
-			);
+				await s3Client.send(new PutObjectCommand(params));
+				return imageName;
+			});
 
 			mediaUrls = await Promise.all(uploadPromises);
 		}
 
 		const post = await prisma.post.create({
 			data: {
-				created_by,
+				created_by: createdBy,
 				created_datetime: new Date(),
 				post_data: {
 					title,
@@ -122,10 +127,7 @@ export async function createPost(req: Request, res: Response) {
 					})),
 				},
 				media: {
-					create: mediaUrls.map((media) => ({ media: media })),
-				},
-				author: {
-					connect: { id: author },
+					create: mediaUrls.map((media) => ({ media })),
 				},
 			},
 		});
@@ -140,6 +142,7 @@ export async function createPost(req: Request, res: Response) {
 		}
 		res.status(201).json(post);
 	} catch (error) {
+		console.error("Error creating post:", error);
 		res.status(500).json({
 			message: "Server error",
 			error: (error as Error).message,

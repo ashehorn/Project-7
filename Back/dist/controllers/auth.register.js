@@ -21,36 +21,35 @@ const passwordHash_1 = __importDefault(require("../utils/passwordHash"));
 const auth_tokens_1 = require("../middleware/auth.tokens");
 dotenv_1.default.config();
 const prisma = new client_1.PrismaClient();
+function hash(password) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const hashedPassword = yield (0, passwordHash_1.default)(password);
+            if (hashedPassword instanceof Error) {
+                throw hashedPassword;
+            }
+            return hashedPassword;
+        }
+        catch (error) {
+            console.error("Error hashing password:", error);
+            throw new Error("Failed to hash password");
+        }
+    });
+}
 function register(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { first_name, last_name, username, email, password } = req.body;
-            // Log the request body to verify the values
             console.log("Request body:", req.body);
-            // Check if email is defined
             if (!email) {
                 return res.status(400).json({ error: "Email is required" });
             }
-            let existingUserByEmail;
-            try {
-                existingUserByEmail = yield prisma.user.findUnique({
-                    where: { email },
-                });
-            }
-            catch (error) {
-                console.error("Error finding user by email:", error);
-                return res.status(500).json({ error: "Server error" });
-            }
-            let existingUserByUsername;
-            try {
-                existingUserByUsername = yield prisma.user.findUnique({
-                    where: { username },
-                });
-            }
-            catch (error) {
-                console.error("Error finding user by username:", error);
-                return res.status(500).json({ error: "Server error" });
-            }
+            const existingUserByEmail = yield prisma.user.findUnique({
+                where: { email },
+            });
+            const existingUserByUsername = yield prisma.user.findUnique({
+                where: { username },
+            });
             if (!(0, emailValidation_1.validateEmail)(email) || !(0, passwordValidator_1.default)(password)) {
                 return res
                     .status(400)
@@ -66,51 +65,31 @@ function register(req, res) {
                     .status(400)
                     .json({ error: "User with this username already exists" });
             }
-            let passwordHash;
-            try {
-                passwordHash = yield (0, passwordHash_1.default)(password);
-            }
-            catch (error) {
-                console.error("Error hashing password:", error);
-                return res.status(500).json({ error: "Server error" });
-            }
-            let user;
-            if (typeof passwordHash === "string") {
-                try {
-                    user = yield prisma.user.create({
-                        data: {
-                            first_name,
-                            last_name,
-                            username,
-                            email,
-                            password: passwordHash,
-                            profile_img: "defaultProfileImg.jpg",
-                            preferences: {},
-                        },
-                    });
-                }
-                catch (error) {
-                    console.error("Error creating user:", error);
-                    return res.status(500).json({ error: "Server error" });
-                }
-            }
-            else {
-                console.error("Error hashing password:", passwordHash);
-                return res.status(500).json({ error: "Server error" });
-            }
-            res.status(201).json({
+            const passwordHash = yield hash(password);
+            const user = yield prisma.user.create({
+                data: {
+                    first_name,
+                    last_name,
+                    username,
+                    email,
+                    password: passwordHash,
+                    profile_img: "defaultProfileImg.jpg",
+                    preferences: {},
+                },
+            });
+            (0, auth_tokens_1.create)(res, user);
+            return res.status(201).json({
                 message: "User created successfully",
                 user: {
                     id: user.id,
                     username: user.username,
                     email: user.email,
                 },
-                accessToken: (0, auth_tokens_1.create)(res, user),
             });
         }
         catch (error) {
             console.error(error);
-            res.status(500).json({ error: "Server error" });
+            return res.status(500).json({ error: "Server error" });
         }
     });
 }

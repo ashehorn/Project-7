@@ -1,13 +1,8 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 generator client {
   provider = "prisma-client-js"
 }
@@ -19,7 +14,7 @@ model User {
   username      String         @unique
   email         String         @unique
   password      String
-  profile_img   String //Image URL
+  profile_img   String
   preferences   Json
   userFriends   UserFriend[]   @relation("UserToUserFriend")
   friendUsers   UserFriend[]   @relation("UserFriendToUser")
@@ -42,12 +37,13 @@ model Post {
   id               Int            @id @default(autoincrement())
   created_by       Int
   created_datetime DateTime
-  post_data        Json //title, body, likes, dislikes etc
+  post_data        Json
   media            PostMedia[]
   likes            User[]         @relation("Likes")
   dislikes         User[]         @relation("Dislikes")
   comments         PostComments[]
-  author           User           @relation(fields: [created_by], references: [id])
+  user             User?          @relation(fields: [userId], references: [id])
+  userId           Int?
 
   @@unique([created_by, created_datetime])
 }
@@ -56,7 +52,7 @@ model PostMedia {
   id     Int    @id @default(autoincrement())
   post   Post   @relation(fields: [postId], references: [id])
   postId Int
-  media  String //img URL
+  media  String
 }
 
 model PostComments {
