@@ -1,24 +1,20 @@
 import { Response, Request } from "express";
-
 import { PrismaClient } from "@prisma/client";
-
 import jwt from "jsonwebtoken";
-
 import bcrypt from "bcrypt";
-
 import dotenv from "dotenv";
 
 dotenv.config();
 
 const prisma = new PrismaClient();
 
-interface logginInfo {
+interface LoginInfo {
 	email: string;
 	password: string;
 }
 
 export async function login(req: Request, res: Response) {
-	const { email, password } = req.body as logginInfo;
+	const { email, password } = req.body as LoginInfo;
 
 	try {
 		const user = await prisma.user.findUnique({
@@ -27,13 +23,20 @@ export async function login(req: Request, res: Response) {
 		});
 
 		if (user && (await bcrypt.compare(password, user.password))) {
-			const accessToken = jwt.sign(
-				{ userId: user.id, email: user.email },
-				process.env.SECRET_KEY!,
-				{ expiresIn: "8hr" }
-			);
 			console.info("Login successful");
-			res.status(200).json({ userId: user.id, accessToken });
+
+			const accessToken = jwt.sign(
+				{ id: user.id, email: user.email },
+				process.env.SECRET_KEY as string,
+				{ expiresIn: "15m" }
+			);
+
+			res.cookie("accessToken", accessToken, {
+				httpOnly: true,
+				sameSite: "strict",
+			});
+
+			res.status(200).json({ userId: user.id });
 		} else {
 			console.warn("Login failed");
 			res.status(401).send("Invalid credentials");

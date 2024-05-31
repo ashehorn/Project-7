@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import { validateEmail } from "../utils/validators/emailValidation";
 import validatePassword from "../utils/validators/passwordValidator";
 import hashPassword from "../utils/passwordHash";
-import { create } from "../middleware/auth.tokens";
+import jwt from "jsonwebtoken";
 
 dotenv.config();
 const prisma = new PrismaClient();
@@ -16,6 +16,7 @@ interface UserInfo {
 	email: string;
 	password: string;
 }
+
 async function hash(password: string): Promise<string> {
 	try {
 		const hashedPassword = await hashPassword(password);
@@ -80,7 +81,16 @@ export async function register(req: Request, res: Response) {
 			},
 		});
 
-		create(res, user);
+		const accessToken = jwt.sign(
+			{ id: user.id, email: user.email },
+			process.env.SECRET_KEY as string,
+			{ expiresIn: "15m" }
+		);
+		res.cookie("accessToken", accessToken, {
+			httpOnly: true,
+			sameSite: "strict",
+		});
+
 		return res.status(201).json({
 			message: "User created successfully",
 			user: {

@@ -20,11 +20,11 @@ export default function Login() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(data),
-                // Need to get the token from cookie and add it to the request header.
+                credentials: 'include',
             });
             const result = await response.json();
             if (response.ok) {
-                window.location.href = 'http://localhost:5173/feed';
+                window.location.href = 'http://localhost:5173/dashboard';
             } else {
                 setErrorMessage(result.error || 'Login failed. Please check your credentials and try again.');
             }

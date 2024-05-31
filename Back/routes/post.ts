@@ -16,7 +16,7 @@ const router = express.Router();
 
 router.get("/", validateAccessToken, getPosts);
 router.get("/:id", validateAccessToken, getPost);
-router.post("/", upload.array("media", 5), createPost);
+router.post("/", validateAccessToken, upload.array("media", 5), createPost);
 router.put("/:id", validateAccessToken, upload.array("media", 5), updatePost);
 router.delete("/:id", validateAccessToken, deletePost);
 

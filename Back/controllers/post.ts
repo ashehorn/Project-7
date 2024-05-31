@@ -7,8 +7,10 @@ import multer from "multer";
 import {
 	S3Client,
 	PutObjectCommand,
-	ObjectCannedACL,
+	GetObjectCommand,
 } from "@aws-sdk/client-s3";
+
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import { v4 as uuidv4 } from "uuid";
 
@@ -45,9 +47,38 @@ const randomImageName = () => uuidv4();
 
 export async function getPosts(req: Request, res: Response) {
 	try {
-		const posts = await prisma.post.findMany();
-		res.status(200).json(posts);
+		const posts = await prisma.post.findMany({
+			include: {
+				media: true,
+			},
+			orderBy: [{ created_datetime: "desc" }],
+		});
+
+		const updatedPosts = await Promise.all(
+			posts.map(async (post) => {
+				const mediaUrls = await Promise.all(
+					post.media.map(async (media) => {
+						const getObjectParams = {
+							Bucket: bucketName,
+							Key: media.media,
+						};
+						const url = await getSignedUrl(
+							s3Client,
+							new GetObjectCommand(getObjectParams),
+							{
+								expiresIn: 3600,
+							}
+						);
+						return url;
+					})
+				);
+				return { ...post, mediaUrls };
+			})
+		);
+
+		res.status(200).json(updatedPosts);
 	} catch (error) {
+		console.error("Error fetching posts:", error);
 		res.status(500).json({ message: "Server error", error: error });
 	}
 }
@@ -57,9 +88,37 @@ export async function getPost(req: Request, res: Response) {
 		const postId = parseInt(req.params.id);
 		const post = await prisma.post.findUnique({
 			where: { id: postId },
+			include: {
+				media: true,
+			},
 		});
-		res.status(200).json(post);
+
+		if (!post) {
+			return res.status(404).json({ message: "Post not found" });
+		}
+
+		const mediaUrls = await Promise.all(
+			post.media.map(async (media) => {
+				const getObjectParams = {
+					Bucket: bucketName,
+					Key: media.media,
+				};
+				const url = await getSignedUrl(
+					s3Client,
+					new GetObjectCommand(getObjectParams),
+					{
+						expiresIn: 3600,
+					}
+				);
+				return url;
+			})
+		);
+
+		const updatedPost = { ...post, mediaUrls };
+
+		res.status(200).json(updatedPost);
 	} catch (error) {
+		console.error("Error fetching post:", error);
 		res.status(500).json({ message: "Server error", error: error });
 	}
 }

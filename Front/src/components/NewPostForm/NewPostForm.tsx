@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import './create.css';
+import './newPostForm.css';
 
-function Create() {
+export default function NewPostForm() {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [files, setFiles] = useState<FileList | null>(null);
@@ -31,7 +31,7 @@ function Create() {
 
         if (files) {
             Array.from(files).forEach((file) => {
-                formData.append('media', file); // Ensure the name matches 'media'
+                formData.append('media', file); 
             });
         }
 
@@ -65,6 +65,7 @@ function Create() {
 
     return (
         <div className="create-post">
+            {/* {console.log(userID)} */}
             <h2>Create a New Post</h2>
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
@@ -78,6 +79,7 @@ function Create() {
                         required
                     />
                 </div>
+
                 <div className="form-group">
                     <label htmlFor="content">Content:</label>
                     <textarea
@@ -104,4 +106,3 @@ function Create() {
     );
 }
 
-export default Create;

@@ -1,4 +1,4 @@
-import { NextFunction, Response, Request } from "express";
+import express, { NextFunction, Response, Request } from "express";
 import jwt, { Secret, JwtPayload } from "jsonwebtoken";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
@@ -12,28 +12,35 @@ const ERROR_MESSAGES = {
 	TOKEN_EXPIRED: "Token has expired",
 	REFRESH_ERROR: "Error refreshing token",
 };
+
 export const validateAccessToken = (
 	req: Request,
 	res: Response,
 	next: NextFunction
 ) => {
-	const authHeader = req.headers["authorization"];
-
-	if (!authHeader) {
-		console.warn(ERROR_MESSAGES.INVALID_TOKEN);
-		return res.redirect("http://localhost:5173/login"); // Redirect to login URL
-	}
-
-	const token = authHeader.split(" ")[1];
+	const token = req.cookies.accessToken;
 
 	if (!token) {
 		console.warn(ERROR_MESSAGES.INVALID_TOKEN);
-		return res.redirect("http://localhost:5173/login"); // Redirect to login URL
+		return res.redirect("http://localhost:5173/");
 	}
 
 	try {
-		const decoded = jwt.verify(token, SECRET_KEY as Secret);
-		(req as any).user = decoded;
+		const decodedToken = jwt.decode(token) as JwtPayload;
+
+		if (!isValidTokenPayload(decodedToken)) {
+			console.warn(ERROR_MESSAGES.INVALID_TOKEN_PAYLOAD);
+			return res.status(422).send(ERROR_MESSAGES.INVALID_TOKEN_PAYLOAD);
+		}
+
+		if (isTokenExpired(decodedToken)) {
+			console.warn(ERROR_MESSAGES.TOKEN_EXPIRED);
+
+			return res
+				.status(422)
+				.send(ERROR_MESSAGES.TOKEN_EXPIRED)
+				.redirect("http://localhost:5173/login");
+		}
 		next();
 	} catch (error) {
 		console.warn(ERROR_MESSAGES.INVALID_TOKEN);
@@ -42,7 +49,7 @@ export const validateAccessToken = (
 };
 
 export async function refresh(req: Request, res: Response) {
-	const oldToken = req.headers.authorization?.split(" ")[1];
+	const oldToken = req.cookies.accessToken;
 	const user = (req as any).user;
 
 	if (!oldToken || !user) {
@@ -87,11 +94,12 @@ function isTokenExpired(decodedToken: JwtPayload): boolean {
 	return false;
 }
 
+// Function to create a new token
 export async function create(res: Response, user: any) {
 	const accessToken = jwt.sign(
 		{ id: user.id, email: user.email },
 		SECRET_KEY as Secret,
-		{ expiresIn: "15m" }
+		{ expiresIn: "2hr" }
 	);
 
 	return res.cookie("accessToken", accessToken, {

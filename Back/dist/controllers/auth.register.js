@@ -18,7 +18,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const emailValidation_1 = require("../utils/validators/emailValidation");
 const passwordValidator_1 = __importDefault(require("../utils/validators/passwordValidator"));
 const passwordHash_1 = __importDefault(require("../utils/passwordHash"));
-const auth_tokens_1 = require("../middleware/auth.tokens");
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 dotenv_1.default.config();
 const prisma = new client_1.PrismaClient();
 function hash(password) {
@@ -77,7 +77,11 @@ function register(req, res) {
                     preferences: {},
                 },
             });
-            (0, auth_tokens_1.create)(res, user);
+            const accessToken = jsonwebtoken_1.default.sign({ id: user.id, email: user.email }, process.env.SECRET_KEY, { expiresIn: "15m" });
+            res.cookie("accessToken", accessToken, {
+                httpOnly: true,
+                sameSite: "strict",
+            });
             return res.status(201).json({
                 message: "User created successfully",
                 user: {

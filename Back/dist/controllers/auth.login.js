@@ -28,9 +28,13 @@ function login(req, res) {
                 select: { id: true, email: true, password: true },
             });
             if (user && (yield bcrypt_1.default.compare(password, user.password))) {
-                const accessToken = jsonwebtoken_1.default.sign({ userId: user.id, email: user.email }, process.env.SECRET_KEY, { expiresIn: "8hr" });
                 console.info("Login successful");
-                res.status(200).json({ userId: user.id, accessToken });
+                const accessToken = jsonwebtoken_1.default.sign({ id: user.id, email: user.email }, process.env.SECRET_KEY, { expiresIn: "15m" });
+                res.cookie("accessToken", accessToken, {
+                    httpOnly: true,
+                    sameSite: "strict",
+                });
+                res.status(200).json({ userId: user.id });
             }
             else {
                 console.warn("Login failed");

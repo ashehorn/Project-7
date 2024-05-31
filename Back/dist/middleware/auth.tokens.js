@@ -24,19 +24,24 @@ const ERROR_MESSAGES = {
     REFRESH_ERROR: "Error refreshing token",
 };
 const validateAccessToken = (req, res, next) => {
-    const authHeader = req.headers["authorization"];
-    if (!authHeader) {
-        console.warn(ERROR_MESSAGES.INVALID_TOKEN);
-        return res.redirect("http://localhost:5173/login"); // Redirect to login URL
-    }
-    const token = authHeader.split(" ")[1];
+    const token = req.cookies.accessToken;
     if (!token) {
         console.warn(ERROR_MESSAGES.INVALID_TOKEN);
-        return res.redirect("http://localhost:5173/login"); // Redirect to login URL
+        return res.redirect("http://localhost:5173/");
     }
     try {
-        const decoded = jsonwebtoken_1.default.verify(token, SECRET_KEY);
-        req.user = decoded;
+        const decodedToken = jsonwebtoken_1.default.decode(token);
+        if (!isValidTokenPayload(decodedToken)) {
+            console.warn(ERROR_MESSAGES.INVALID_TOKEN_PAYLOAD);
+            return res.status(422).send(ERROR_MESSAGES.INVALID_TOKEN_PAYLOAD);
+        }
+        if (isTokenExpired(decodedToken)) {
+            console.warn(ERROR_MESSAGES.TOKEN_EXPIRED);
+            return res
+                .status(422)
+                .send(ERROR_MESSAGES.TOKEN_EXPIRED)
+                .redirect("http://localhost:5173/login");
+        }
         next();
     }
     catch (error) {
@@ -47,8 +52,7 @@ const validateAccessToken = (req, res, next) => {
 exports.validateAccessToken = validateAccessToken;
 function refresh(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        var _a;
-        const oldToken = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(" ")[1];
+        const oldToken = req.cookies.accessToken;
         const user = req.user;
         if (!oldToken || !user) {
             console.warn(ERROR_MESSAGES.INVALID_TOKEN);
@@ -86,9 +90,10 @@ function isTokenExpired(decodedToken) {
     }
     return false;
 }
+// Function to create a new token
 function create(res, user) {
     return __awaiter(this, void 0, void 0, function* () {
-        const accessToken = jsonwebtoken_1.default.sign({ id: user.id, email: user.email }, SECRET_KEY, { expiresIn: "15m" });
+        const accessToken = jsonwebtoken_1.default.sign({ id: user.id, email: user.email }, SECRET_KEY, { expiresIn: "2hr" });
         return res.cookie("accessToken", accessToken, {
             httpOnly: true,
             sameSite: "strict",

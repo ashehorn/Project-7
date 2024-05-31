@@ -16,6 +16,7 @@ exports.deletePost = exports.updatePost = exports.createPost = exports.getPost =
 const client_1 = require("@prisma/client");
 const multer_1 = __importDefault(require("multer"));
 const client_s3_1 = require("@aws-sdk/client-s3");
+const s3_request_presigner_1 = require("@aws-sdk/s3-request-presigner");
 const uuid_1 = require("uuid");
 const dotenv_1 = __importDefault(require("dotenv"));
 const prisma = new client_1.PrismaClient();
@@ -41,10 +42,29 @@ const randomImageName = () => (0, uuid_1.v4)();
 function getPosts(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const posts = yield prisma.post.findMany();
-            res.status(200).json(posts);
+            const posts = yield prisma.post.findMany({
+                include: {
+                    media: true,
+                },
+                orderBy: [{ created_datetime: "desc" }],
+            });
+            const updatedPosts = yield Promise.all(posts.map((post) => __awaiter(this, void 0, void 0, function* () {
+                const mediaUrls = yield Promise.all(post.media.map((media) => __awaiter(this, void 0, void 0, function* () {
+                    const getObjectParams = {
+                        Bucket: bucketName,
+                        Key: media.media,
+                    };
+                    const url = yield (0, s3_request_presigner_1.getSignedUrl)(s3Client, new client_s3_1.GetObjectCommand(getObjectParams), {
+                        expiresIn: 3600,
+                    });
+                    return url;
+                })));
+                return Object.assign(Object.assign({}, post), { mediaUrls });
+            })));
+            res.status(200).json(updatedPosts);
         }
         catch (error) {
+            console.error("Error fetching posts:", error);
             res.status(500).json({ message: "Server error", error: error });
         }
     });
@@ -56,10 +76,28 @@ function getPost(req, res) {
             const postId = parseInt(req.params.id);
             const post = yield prisma.post.findUnique({
                 where: { id: postId },
+                include: {
+                    media: true,
+                },
             });
-            res.status(200).json(post);
+            if (!post) {
+                return res.status(404).json({ message: "Post not found" });
+            }
+            const mediaUrls = yield Promise.all(post.media.map((media) => __awaiter(this, void 0, void 0, function* () {
+                const getObjectParams = {
+                    Bucket: bucketName,
+                    Key: media.media,
+                };
+                const url = yield (0, s3_request_presigner_1.getSignedUrl)(s3Client, new client_s3_1.GetObjectCommand(getObjectParams), {
+                    expiresIn: 3600,
+                });
+                return url;
+            })));
+            const updatedPost = Object.assign(Object.assign({}, post), { mediaUrls });
+            res.status(200).json(updatedPost);
         }
         catch (error) {
+            console.error("Error fetching post:", error);
             res.status(500).json({ message: "Server error", error: error });
         }
     });

@@ -12,7 +12,7 @@ const upload = (0, multer_1.default)({ storage: storage });
 const router = express_1.default.Router();
 router.get("/", auth_tokens_1.validateAccessToken, post_1.getPosts);
 router.get("/:id", auth_tokens_1.validateAccessToken, post_1.getPost);
-router.post("/", upload.array("media", 5), post_1.createPost);
+router.post("/", auth_tokens_1.validateAccessToken, upload.array("media", 5), post_1.createPost);
 router.put("/:id", auth_tokens_1.validateAccessToken, upload.array("media", 5), post_1.updatePost);
 router.delete("/:id", auth_tokens_1.validateAccessToken, post_1.deletePost);
 exports.default = router;
