@@ -37,16 +37,13 @@ const validateAccessToken = (req, res, next) => {
         }
         if (isTokenExpired(decodedToken)) {
             console.warn(ERROR_MESSAGES.TOKEN_EXPIRED);
-            return res
-                .status(422)
-                .send(ERROR_MESSAGES.TOKEN_EXPIRED)
-                .redirect("http://localhost:5173/login");
+            return res.status(422).send(ERROR_MESSAGES.TOKEN_EXPIRED);
         }
         next();
     }
     catch (error) {
         console.warn(ERROR_MESSAGES.INVALID_TOKEN);
-        return res.redirect("http://localhost:5173/login");
+        return res.send(ERROR_MESSAGES.INVALID_TOKEN);
     }
 };
 exports.validateAccessToken = validateAccessToken;
@@ -93,7 +90,7 @@ function isTokenExpired(decodedToken) {
 // Function to create a new token
 function create(res, user) {
     return __awaiter(this, void 0, void 0, function* () {
-        const accessToken = jsonwebtoken_1.default.sign({ id: user.id, email: user.email }, SECRET_KEY, { expiresIn: "2hr" });
+        const accessToken = jsonwebtoken_1.default.sign({ id: user.id, email: user.email }, SECRET_KEY, { expiresIn: 7200 });
         return res.cookie("accessToken", accessToken, {
             httpOnly: true,
             sameSite: "strict",

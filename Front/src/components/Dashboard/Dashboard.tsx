@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './dashboard.css';
+import ImageCarousel from '../ImageCarousel/Carousel';
 import axios from 'axios';
 
 
@@ -54,9 +55,7 @@ function Dashboard() {
                         <p>{post.post_data.content}</p>
                         {post.mediaUrls && post.mediaUrls.length > 0 && (
                             <div className="media">
-                                {post.mediaUrls.map((url, idx) => (
-                                    <img key={idx} src={url} alt={`Media ${idx}`} />
-                                ))}
+                                <ImageCarousel images={post.mediaUrls} />
                             </div>
                         )}
                     </div>

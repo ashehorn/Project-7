@@ -36,15 +36,12 @@ export const validateAccessToken = (
 		if (isTokenExpired(decodedToken)) {
 			console.warn(ERROR_MESSAGES.TOKEN_EXPIRED);
 
-			return res
-				.status(422)
-				.send(ERROR_MESSAGES.TOKEN_EXPIRED)
-				.redirect("http://localhost:5173/login");
+			return res.status(422).send(ERROR_MESSAGES.TOKEN_EXPIRED);
 		}
 		next();
 	} catch (error) {
 		console.warn(ERROR_MESSAGES.INVALID_TOKEN);
-		return res.redirect("http://localhost:5173/login");
+		return res.send(ERROR_MESSAGES.INVALID_TOKEN);
 	}
 };
 
@@ -99,7 +96,7 @@ export async function create(res: Response, user: any) {
 	const accessToken = jwt.sign(
 		{ id: user.id, email: user.email },
 		SECRET_KEY as Secret,
-		{ expiresIn: "2hr" }
+		{ expiresIn: 7200 }
 	);
 
 	return res.cookie("accessToken", accessToken, {
