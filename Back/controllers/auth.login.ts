@@ -1,6 +1,6 @@
 import { Response, Request } from "express";
 import { PrismaClient } from "@prisma/client";
-import jwt from "jsonwebtoken";
+import { create } from "../middleware/auth.tokens";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 
@@ -24,17 +24,7 @@ export async function login(req: Request, res: Response) {
 
 		if (user && (await bcrypt.compare(password, user.password))) {
 			console.info("Login successful");
-
-			const accessToken = jwt.sign(
-				{ id: user.id, email: user.email },
-				process.env.SECRET_KEY as string,
-				{ expiresIn: "15m" }
-			);
-
-			res.cookie("accessToken", accessToken, {
-				httpOnly: true,
-				sameSite: "strict",
-			});
+			await create(res, user);
 
 			res.status(200).json({ userId: user.id });
 		} else {

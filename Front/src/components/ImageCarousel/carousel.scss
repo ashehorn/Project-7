@@ -1,0 +1,74 @@
+.carousel-container {
+	position: relative;
+	width: 100%;
+	max-width: 800px; // Increased max-width for larger images
+	margin: auto;
+	border-radius: 10px; // Rounded corners
+	overflow: hidden;
+	background-color: #1c1e21; // Dark background to match modern design
+  }
+  
+  .carousel {
+	display: flex;
+	transition: transform 0.5s ease-in-out; // Smooth transition
+  }
+  
+  .carousel-image {
+	min-width: 100%;
+	transition: opacity 0.5s ease-in-out; // Smooth fade effect
+	opacity: 0;
+	border-radius: 10px; // Rounded corners for images
+	object-fit: cover; // Ensure images cover the container
+  }
+  
+  .carousel-image.active {
+	opacity: 1;
+  }
+  
+  .prev-button,
+  .next-button {
+	position: absolute;
+	top: 50%;
+	width: 40px;
+	height: 40px;
+	background-color: rgba(0, 0, 0, 0.5); // Semi-transparent background
+	color: white;
+	border: none;
+	cursor: pointer;
+	transform: translateY(-50%);
+	border-radius: 50%; // Circular buttons
+	display: flex;
+	align-items: center;
+	justify-content: center;
+  }
+  
+  .prev-button:hover,
+  .next-button:hover {
+	background-color: rgba(0, 0, 0, 0.7); // Darker on hover
+  }
+  
+  .prev-button {
+	left: 10px;
+  }
+  
+  .next-button {
+	right: 10px;
+  }
+  
+  /* Responsive Styling */
+  @media (max-width: 768px) {
+	.carousel-container {
+	  max-width: 100%;
+	  border-radius: 0; // Remove border radius on mobile for full-width effect
+	}
+  
+	.carousel-image {
+	  height: 300px; // Adjust image height for mobile
+	}
+  }
+  
+  @media (min-width: 769px) {
+	.carousel-image {
+	  height: auto;
+	}
+  }

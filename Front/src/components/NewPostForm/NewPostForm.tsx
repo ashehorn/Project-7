@@ -1,6 +1,16 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import './newPostForm.css';
+import './newPostForm.scss';
+
+// axios.interceptors.response.use(
+//   response => response,
+//   error => {
+//     if (error.response && error.response.status === 302) {
+//       window.location.href = error.response.headers.location;
+//     }
+//     return Promise.reject(error);
+//   }
+// );
 
 export default function NewPostForm() {
     const [title, setTitle] = useState('');
@@ -40,6 +50,7 @@ export default function NewPostForm() {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
+                withCredentials: true,
             });
 
             console.log('Post created:', response.data);
@@ -65,11 +76,9 @@ export default function NewPostForm() {
 
     return (
         <div className="create-post">
-            {/* {console.log(userID)} */}
-            <h2>Create a New Post</h2>
+            <h2>Create Post</h2>
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
-                    <label htmlFor="title">Title:</label>
                     <input
                         type="text"
                         id="title"
@@ -77,21 +86,22 @@ export default function NewPostForm() {
                         value={title}
                         onChange={handleTitleChange}
                         required
+                        placeholder='Title'
+                        maxLength={40}
                     />
                 </div>
 
                 <div className="form-group">
-                    <label htmlFor="content">Content:</label>
                     <textarea
                         id="content"
                         value={content}
                         name="content"
                         onChange={handleContentChange}
                         required
+                        placeholder='Content'
                     />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="media">Upload Files:</label>
                     <input
                         type="file"
                         id="media"
@@ -100,7 +110,7 @@ export default function NewPostForm() {
                         onChange={handleFileChange}
                     />
                 </div>
-                <button type="submit">Create Post</button>
+                <button id="post" type="submit">Post</button>
             </form>
         </div>
     );

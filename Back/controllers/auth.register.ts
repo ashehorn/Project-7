@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import dotenv from "dotenv";
 import { validateEmail } from "../utils/validators/emailValidation";
 import validatePassword from "../utils/validators/passwordValidator";
+import { create } from "../middleware/auth.tokens";
 import hashPassword from "../utils/passwordHash";
 import jwt from "jsonwebtoken";
 
@@ -81,15 +82,7 @@ export async function register(req: Request, res: Response) {
 			},
 		});
 
-		const accessToken = jwt.sign(
-			{ id: user.id, email: user.email },
-			process.env.SECRET_KEY as string,
-			{ expiresIn: "15m" }
-		);
-		res.cookie("accessToken", accessToken, {
-			httpOnly: true,
-			sameSite: "strict",
-		});
+		create(res, user);
 
 		return res.status(201).json({
 			message: "User created successfully",

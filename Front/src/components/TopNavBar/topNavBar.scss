@@ -1,0 +1,102 @@
+$navbarHeight: 60px;
+$backgroundColor: #24282a;
+$inputBackgroundColor: #2b3236;
+$accentColor: #fd2d01;
+$headingFont: "Roboto", sans-serif;
+$textColor: white;
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: $navbarHeight;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: $backgroundColor;
+  padding: 0 20px;
+  z-index: 0;
+
+  &-search {
+    flex: 1;
+    margin: 0 20px;
+
+    input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      background-color: $inputBackgroundColor;
+      color: $textColor;
+      font-family: $headingFont;
+
+      &::placeholder {
+        color: lighten($textColor, 30%);
+      }
+    }
+  }
+
+  &-links {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    a {
+      text-decoration: none;
+      color: $textColor;
+      font-family: $headingFont;
+      font-size: 1rem;
+      padding: 10px 20px;
+      border-radius: 10px;
+      transition: background-color 0.3s;
+
+      &:hover {
+        background-color: lighten($inputBackgroundColor, 10%);
+      }
+    }
+  }
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+}
+.logo{
+  z-index: 1001;
+  width: 200px;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    align-items: flex-start;
+    height: auto;
+    padding: 10px;
+
+    &-logo {
+      margin-bottom: 10px;
+    }
+
+    &-search {
+      width: 100%;
+      margin: 10px 0;
+
+      input {
+        width: 100%;
+      }
+    }
+
+    &-links {
+      width: 100%;
+      justify-content: space-between;
+      a {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        margin: 5px 0;
+      }
+    }
+  }
+}

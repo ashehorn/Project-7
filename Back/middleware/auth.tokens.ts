@@ -13,6 +13,7 @@ const ERROR_MESSAGES = {
 	REFRESH_ERROR: "Error refreshing token",
 };
 
+// Middleware to validate the access token
 export const validateAccessToken = (
 	req: Request,
 	res: Response,
@@ -22,7 +23,7 @@ export const validateAccessToken = (
 
 	if (!token) {
 		console.warn(ERROR_MESSAGES.INVALID_TOKEN);
-		return res.redirect("http://localhost:5173/");
+		return res.redirect("http://localhost:5173/login"); // Redirect to login page if no token
 	}
 
 	try {
@@ -30,21 +31,22 @@ export const validateAccessToken = (
 
 		if (!isValidTokenPayload(decodedToken)) {
 			console.warn(ERROR_MESSAGES.INVALID_TOKEN_PAYLOAD);
-			return res.status(422).send(ERROR_MESSAGES.INVALID_TOKEN_PAYLOAD);
+			return res.redirect("http://localhost:5173/login"); // Redirect to login page if invalid token payload
 		}
 
 		if (isTokenExpired(decodedToken)) {
 			console.warn(ERROR_MESSAGES.TOKEN_EXPIRED);
-
-			return res.status(422).send(ERROR_MESSAGES.TOKEN_EXPIRED);
+			return res.redirect("http://localhost:5173/login"); // Redirect to login page if token expired
 		}
+
 		next();
 	} catch (error) {
 		console.warn(ERROR_MESSAGES.INVALID_TOKEN);
-		return res.send(ERROR_MESSAGES.INVALID_TOKEN);
+		return res.redirect("http://localhost:5173/login"); // Redirect to login page if error decoding token
 	}
 };
 
+// Function to refresh the access token
 export async function refresh(req: Request, res: Response) {
 	const oldToken = req.cookies.accessToken;
 	const user = (req as any).user;
@@ -74,6 +76,7 @@ export async function refresh(req: Request, res: Response) {
 	}
 }
 
+// Function to validate token payload
 function isValidTokenPayload(decodedToken: JwtPayload): boolean {
 	return (
 		decodedToken &&
@@ -83,6 +86,7 @@ function isValidTokenPayload(decodedToken: JwtPayload): boolean {
 	);
 }
 
+// Function to check if the token is expired
 function isTokenExpired(decodedToken: JwtPayload): boolean {
 	const exp = decodedToken.exp;
 	if (typeof exp === "number") {
@@ -96,7 +100,7 @@ export async function create(res: Response, user: any) {
 	const accessToken = jwt.sign(
 		{ id: user.id, email: user.email },
 		SECRET_KEY as Secret,
-		{ expiresIn: 7200 }
+		{ expiresIn: "7h" }
 	);
 
 	return res.cookie("accessToken", accessToken, {

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSwipeable } from 'react-swipeable';
-import { FaLongArrowAltLeft, FaLongArrowAltRight } from "react-icons/fa";
-
-import './carousel.css';
+import { FaLongArrowAltLeft, FaLongArrowAltRight } from 'react-icons/fa';
+import './carousel.scss';
 
 interface ImageCarouselProps {
   images: string[];
@@ -14,7 +13,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images }) => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 10000); 
+    }, 10000);
     return () => clearInterval(interval);
   }, [images.length]);
 
@@ -29,7 +28,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images }) => {
   const swipeHandlers = useSwipeable({
     onSwipedLeft: handleNext,
     onSwipedRight: handlePrev,
-    trackMouse: true
+    trackMouse: true,
   });
 
   return (
@@ -44,9 +43,16 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ images }) => {
           />
         ))}
       </div>
-      <button className="prev-button" onClick={handlePrev}><FaLongArrowAltLeft style={{fontSize: "2rem"}}/></button>
-      <button className="next-button" onClick={handleNext}><FaLongArrowAltRight style={{fontSize: "2rem"}}/>
-</button>
+      {images.length > 1 && (
+        <>
+          <button className="prev-button" onClick={handlePrev}>
+            <FaLongArrowAltLeft style={{ fontSize: '2rem' }} />
+          </button>
+          <button className="next-button" onClick={handleNext}>
+            <FaLongArrowAltRight style={{ fontSize: '2rem' }} />
+          </button>
+        </>
+      )}
     </div>
   );
 };

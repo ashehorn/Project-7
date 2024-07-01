@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.login = void 0;
 const client_1 = require("@prisma/client");
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const auth_tokens_1 = require("../middleware/auth.tokens");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
@@ -29,11 +29,7 @@ function login(req, res) {
             });
             if (user && (yield bcrypt_1.default.compare(password, user.password))) {
                 console.info("Login successful");
-                const accessToken = jsonwebtoken_1.default.sign({ id: user.id, email: user.email }, process.env.SECRET_KEY, { expiresIn: "15m" });
-                res.cookie("accessToken", accessToken, {
-                    httpOnly: true,
-                    sameSite: "strict",
-                });
+                yield (0, auth_tokens_1.create)(res, user);
                 res.status(200).json({ userId: user.id });
             }
             else {

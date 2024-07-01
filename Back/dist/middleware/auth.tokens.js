@@ -23,30 +23,32 @@ const ERROR_MESSAGES = {
     TOKEN_EXPIRED: "Token has expired",
     REFRESH_ERROR: "Error refreshing token",
 };
+// Middleware to validate the access token
 const validateAccessToken = (req, res, next) => {
     const token = req.cookies.accessToken;
     if (!token) {
         console.warn(ERROR_MESSAGES.INVALID_TOKEN);
-        return res.redirect("http://localhost:5173/");
+        return res.redirect("http://localhost:5173/login"); // Redirect to login page if no token
     }
     try {
         const decodedToken = jsonwebtoken_1.default.decode(token);
         if (!isValidTokenPayload(decodedToken)) {
             console.warn(ERROR_MESSAGES.INVALID_TOKEN_PAYLOAD);
-            return res.status(422).send(ERROR_MESSAGES.INVALID_TOKEN_PAYLOAD);
+            return res.redirect("http://localhost:5173/login"); // Redirect to login page if invalid token payload
         }
         if (isTokenExpired(decodedToken)) {
             console.warn(ERROR_MESSAGES.TOKEN_EXPIRED);
-            return res.status(422).send(ERROR_MESSAGES.TOKEN_EXPIRED);
+            return res.redirect("http://localhost:5173/login"); // Redirect to login page if token expired
         }
         next();
     }
     catch (error) {
         console.warn(ERROR_MESSAGES.INVALID_TOKEN);
-        return res.send(ERROR_MESSAGES.INVALID_TOKEN);
+        return res.redirect("http://localhost:5173/login"); // Redirect to login page if error decoding token
     }
 };
 exports.validateAccessToken = validateAccessToken;
+// Function to refresh the access token
 function refresh(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const oldToken = req.cookies.accessToken;
@@ -74,12 +76,14 @@ function refresh(req, res) {
     });
 }
 exports.refresh = refresh;
+// Function to validate token payload
 function isValidTokenPayload(decodedToken) {
     return (decodedToken &&
         typeof decodedToken === "object" &&
         "exp" in decodedToken &&
         typeof decodedToken.exp === "number");
 }
+// Function to check if the token is expired
 function isTokenExpired(decodedToken) {
     const exp = decodedToken.exp;
     if (typeof exp === "number") {
@@ -90,7 +94,7 @@ function isTokenExpired(decodedToken) {
 // Function to create a new token
 function create(res, user) {
     return __awaiter(this, void 0, void 0, function* () {
-        const accessToken = jsonwebtoken_1.default.sign({ id: user.id, email: user.email }, SECRET_KEY, { expiresIn: 7200 });
+        const accessToken = jsonwebtoken_1.default.sign({ id: user.id, email: user.email }, SECRET_KEY, { expiresIn: "7h" });
         return res.cookie("accessToken", accessToken, {
             httpOnly: true,
             sameSite: "strict",

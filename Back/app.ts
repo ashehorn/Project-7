@@ -7,6 +7,7 @@ import register from "./routes/auth/register";
 import post from "./routes/post";
 import user from "./routes/user";
 import cookieParser from "cookie-parser";
+import logout from "./routes/auth/logout";
 
 dotenv.config();
 
@@ -30,6 +31,7 @@ app.use("/api/auth/login", login);
 app.use("/api/auth/register", register);
 app.use("/api/user", user);
 app.use("/api/post", post);
+app.use("/api/auth/logout", logout);
 
 app.listen(PORT, () => {
 	console.log(`listening on port: ${PORT}`);
