@@ -128,6 +128,7 @@ form {
     }
 
     input[type="file"] {
+      display: block;
       outline: none;
       border: none;
       border-radius: 10px;
@@ -186,6 +187,7 @@ form {
 @media (max-width: 768px) {
   .create-post {
     width: 100%;
+    margin: 0px 20px 0px 20px;
     padding: 20px;
     height: auto;
     h2 {

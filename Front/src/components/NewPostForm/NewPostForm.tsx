@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import './newPostForm.scss';
 
 // axios.interceptors.response.use(
@@ -16,6 +17,7 @@ export default function NewPostForm() {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [files, setFiles] = useState<FileList | null>(null);
+    const navigate = useNavigate();
 
     const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setTitle(event.target.value);
@@ -57,6 +59,8 @@ export default function NewPostForm() {
             setTitle('');
             setContent('');
             setFiles(null);
+
+            navigate('/dashboard');
         } catch (error) {
             console.error('Error creating post:', error);
 

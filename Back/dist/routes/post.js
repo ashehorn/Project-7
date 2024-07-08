@@ -15,4 +15,6 @@ router.get("/:id", auth_tokens_1.validateAccessToken, post_1.getPost);
 router.post("/", auth_tokens_1.validateAccessToken, upload.array("media", 5), post_1.createPost);
 router.put("/:id", auth_tokens_1.validateAccessToken, upload.array("media", 5), post_1.updatePost);
 router.delete("/:id", auth_tokens_1.validateAccessToken, post_1.deletePost);
+router.post("/like", auth_tokens_1.validateAccessToken, post_1.likePost);
+router.post("/dislike", auth_tokens_1.validateAccessToken, post_1.dislikePost);
 exports.default = router;

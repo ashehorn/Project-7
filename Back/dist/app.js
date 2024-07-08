@@ -11,6 +11,7 @@ const login_1 = __importDefault(require("./routes/auth/login"));
 const register_1 = __importDefault(require("./routes/auth/register"));
 const post_1 = __importDefault(require("./routes/post"));
 const user_1 = __importDefault(require("./routes/user"));
+const comment_1 = __importDefault(require("./routes/comment"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const logout_1 = __importDefault(require("./routes/auth/logout"));
 dotenv_1.default.config();
@@ -32,6 +33,7 @@ app.use("/api/auth/register", register_1.default);
 app.use("/api/user", user_1.default);
 app.use("/api/post", post_1.default);
 app.use("/api/auth/logout", logout_1.default);
+app.use("/api/comment", comment_1.default);
 app.listen(PORT, () => {
     console.log(`listening on port: ${PORT}`);
 });

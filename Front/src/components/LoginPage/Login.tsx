@@ -58,8 +58,7 @@ export default function AuthForm() {
   return (
     <div className="auth">
       <div className={isLogin ? "login" : "register"}>
-        <h1>{isLogin ? 'Login' : 'Register'}</h1>
-        <Logo/>
+        <div className='logo-container'><Logo/></div>
         <form
           className={isLogin ? 'login-form' : 'register-form'}
           method="post"

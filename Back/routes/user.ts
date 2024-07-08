@@ -1,11 +1,10 @@
 import express from "express";
+import { getUser, deleteUser } from "../controllers/profile";
 
 const router = express.Router();
 
-router.get("/:id", (req, res) => {});
+router.get("/:id", getUser);
 
-router.post("/", (req, res) => {});
-
-router.delete("/:id", (req, res) => {});
+router.delete("/:id", deleteUser);
 
 export default router;

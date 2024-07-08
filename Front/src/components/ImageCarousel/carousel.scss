@@ -1,24 +1,30 @@
 .carousel-container {
 	position: relative;
 	width: 100%;
-	max-width: 800px; // Increased max-width for larger images
+	max-width: 800px;
 	margin: auto;
-	border-radius: 10px; // Rounded corners
+	border-radius: 10px;
 	overflow: hidden;
-	background-color: #1c1e21; // Dark background to match modern design
+	background-color: #1c1e21;
   }
   
   .carousel {
 	display: flex;
-	transition: transform 0.5s ease-in-out; // Smooth transition
+	transition: transform 0.5s ease-in-out;
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+  }
+  
+  .carousel::-webkit-scrollbar {
+	display: none;
   }
   
   .carousel-image {
 	min-width: 100%;
-	transition: opacity 0.5s ease-in-out; // Smooth fade effect
+	transition: opacity 0.5s ease-in-out;
 	opacity: 0;
-	border-radius: 10px; // Rounded corners for images
-	object-fit: cover; // Ensure images cover the container
+	border-radius: 10px;
+	object-fit: cover;
   }
   
   .carousel-image.active {
@@ -31,12 +37,12 @@
 	top: 50%;
 	width: 40px;
 	height: 40px;
-	background-color: rgba(0, 0, 0, 0.5); // Semi-transparent background
+	background-color: rgba(0, 0, 0, 0.5);
 	color: white;
 	border: none;
 	cursor: pointer;
 	transform: translateY(-50%);
-	border-radius: 50%; // Circular buttons
+	border-radius: 50%;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -44,7 +50,7 @@
   
   .prev-button:hover,
   .next-button:hover {
-	background-color: rgba(0, 0, 0, 0.7); // Darker on hover
+	background-color: rgba(0, 0, 0, 0.7);
   }
   
   .prev-button {
@@ -59,11 +65,11 @@
   @media (max-width: 768px) {
 	.carousel-container {
 	  max-width: 100%;
-	  border-radius: 0; // Remove border radius on mobile for full-width effect
+	  border-radius: 0;
 	}
   
 	.carousel-image {
-	  height: 300px; // Adjust image height for mobile
+	  height: 300px;
 	}
   }
   

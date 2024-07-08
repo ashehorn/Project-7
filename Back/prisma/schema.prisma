@@ -42,7 +42,7 @@ model Post {
   likes            User[]         @relation("Likes")
   dislikes         User[]         @relation("Dislikes")
   comments         PostComments[]
-  user             User?          @relation(fields: [userId], references: [id])
+  user             User?          @relation(fields: [created_by], references: [id])
   userId           Int?
 
   @@unique([created_by, created_datetime])
@@ -56,11 +56,19 @@ model PostMedia {
 }
 
 model PostComments {
-  id               Int      @id @default(autoincrement())
-  post             Post     @relation(fields: [postId], references: [id])
+  id               Int            @id @default(autoincrement())
+  post             Post           @relation(fields: [postId], references: [id])
   postId           Int
   user_comment_id  Int
   created_datetime DateTime
   comment_body     String
-  author           User     @relation(fields: [user_comment_id], references: [id])
+  author           User           @relation(fields: [user_comment_id], references: [id])
+  media            CommentMedia[]
+}
+
+model CommentMedia {
+  id        Int          @id @default(autoincrement())
+  comment   PostComments @relation(fields: [commentId], references: [id])
+  commentId Int
+  media     String
 }

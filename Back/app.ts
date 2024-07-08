@@ -6,6 +6,7 @@ import login from "./routes/auth/login";
 import register from "./routes/auth/register";
 import post from "./routes/post";
 import user from "./routes/user";
+import comment from "./routes/comment";
 import cookieParser from "cookie-parser";
 import logout from "./routes/auth/logout";
 
@@ -32,6 +33,7 @@ app.use("/api/auth/register", register);
 app.use("/api/user", user);
 app.use("/api/post", post);
 app.use("/api/auth/logout", logout);
+app.use("/api/comment", comment);
 
 app.listen(PORT, () => {
 	console.log(`listening on port: ${PORT}`);

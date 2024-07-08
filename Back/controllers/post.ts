@@ -1,4 +1,5 @@
 import { Response, Request, NextFunction } from "express";
+import { AuthenticatedRequest } from "../middleware/auth.tokens";
 
 import { PrismaClient } from "@prisma/client";
 
@@ -8,6 +9,7 @@ import {
 	S3Client,
 	PutObjectCommand,
 	GetObjectCommand,
+	DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
@@ -50,6 +52,9 @@ export async function getPosts(req: Request, res: Response) {
 		const posts = await prisma.post.findMany({
 			include: {
 				media: true,
+				likes: true,
+				dislikes: true,
+				user: true,
 			},
 			orderBy: [{ created_datetime: "desc" }],
 		});
@@ -65,17 +70,26 @@ export async function getPosts(req: Request, res: Response) {
 						const url = await getSignedUrl(
 							s3Client,
 							new GetObjectCommand(getObjectParams),
-							{
-								expiresIn: 3600,
-							}
+							{ expiresIn: 3600 }
 						);
 						return url;
 					})
 				);
-				return { ...post, mediaUrls };
+				return {
+					...post,
+					mediaUrls,
+					likesCount: post.likes.length,
+					dislikesCount: post.dislikes.length,
+					hasLiked: post.likes.some(
+						(user) => user.id === req.user?.id
+					),
+					hasDisliked: post.dislikes.some(
+						(user) => user.id === req.user?.id
+					),
+					created_by: post.created_by,
+				};
 			})
 		);
-
 		res.status(200).json(updatedPosts);
 	} catch (error) {
 		console.error("Error fetching posts:", error);
@@ -209,57 +223,228 @@ export async function createPost(req: Request, res: Response) {
 	}
 }
 
-export async function updatePost(req: Request, res: Response) {
-	try {
-		const postId = parseInt(req.params.id);
-		const post = await prisma.post.update({
-			where: { id: postId },
-			data: req.body,
-		});
-		res.status(200).json(post);
-	} catch (error) {
-		res.status(500).json({ message: "Server error", error: error });
-	}
-}
-
-function authenticateAndAuthorize(
-	req: Request,
-	res: Response,
-	next: NextFunction
-) {
+export const updatePost = async (req: AuthenticatedRequest, res: Response) => {
 	const postId = parseInt(req.params.id);
-	const userId = req.user?.id;
+	try {
+		const post = await prisma.post.findUnique({
+			where: { id: postId },
+		});
 
-	if (!userId) {
+		if (!post) {
+			return res.status(404).json({ message: "Post not found" });
+		}
+
+		if (post.created_by !== req.user?.id) {
+			return res.status(403).json({ message: "Forbidden" });
+		}
+
+		const { title, content } = req.body;
+
+		const updatedPost = await prisma.post.update({
+			where: { id: postId },
+			data: {
+				post_data: {
+					title,
+					content,
+				},
+			},
+		});
+
+		res.status(200).json(updatedPost);
+	} catch (error) {
+		console.error("Error updating post:", error);
+		res.status(500).json({ message: "Server error", error });
+	}
+};
+
+export const deletePost = async (req: AuthenticatedRequest, res: Response) => {
+	const postId = parseInt(req.params.id);
+	try {
+		const post = await prisma.post.findUnique({
+			where: { id: postId },
+			include: {
+				media: true,
+				comments: {
+					include: {
+						media: true,
+					},
+				},
+			},
+		});
+
+		if (!post) {
+			return res.status(404).json({ message: "Post not found" });
+		}
+
+		if (post.created_by !== req.user?.id) {
+			return res.status(403).json({ message: "Forbidden" });
+		}
+
+		// Delete media files from S3 for post media
+		if (post.media.length > 0) {
+			const deletePostMediaPromises = post.media.map(async (media) => {
+				const params = {
+					Bucket: process.env.BUCKET_NAME!,
+					Key: media.media,
+				};
+				await s3Client.send(new DeleteObjectCommand(params));
+			});
+			await Promise.all(deletePostMediaPromises);
+		}
+
+		// Delete related media files from S3 for comment media
+		for (const comment of post.comments) {
+			if (comment.media.length > 0) {
+				const deleteCommentMediaPromises = comment.media.map(
+					async (media) => {
+						const params = {
+							Bucket: process.env.BUCKET_NAME!,
+							Key: media.media,
+						};
+						await s3Client.send(new DeleteObjectCommand(params));
+					}
+				);
+				await Promise.all(deleteCommentMediaPromises);
+			}
+		}
+
+		// Delete related comment media records
+		await prisma.commentMedia.deleteMany({
+			where: {
+				comment: {
+					postId: postId,
+				},
+			},
+		});
+
+		// Delete related comments
+		await prisma.postComments.deleteMany({
+			where: { postId: postId },
+		});
+
+		// Delete related post media records
+		await prisma.postMedia.deleteMany({
+			where: { postId: postId },
+		});
+
+		// Delete the post
+		await prisma.post.delete({
+			where: { id: postId },
+		});
+
+		res.status(200).json({ message: "Post deleted successfully" });
+	} catch (error) {
+		console.error("Error deleting post:", error);
+		res.status(500).json({ message: "Server error", error });
+	}
+};
+
+export const likePost = async (req: AuthenticatedRequest, res: Response) => {
+	const { postId } = req.body;
+	const userIdInt = req.user?.id;
+
+	if (!userIdInt) {
 		return res.status(401).json({ message: "Unauthorized" });
 	}
 
-	prisma.post
-		.findUnique({
-			where: { id: postId },
-			select: { created_by: true },
-		})
-		.then((post) => {
-			if (!post || post.created_by !== userId) {
-				return res.status(403).json({ message: "Forbidden" });
-			}
-			next();
-		})
-		.catch((error) => {
-			res.status(500).json({ message: "Server error", error: error });
-		});
-}
+	try {
+		const postIdInt = parseInt(postId, 10);
 
-export async function deletePost(req: Request, res: Response) {
-	authenticateAndAuthorize(req, res, async () => {
-		try {
-			const postId = parseInt(req.params.id);
-			const post = await prisma.post.delete({
-				where: { id: postId },
-			});
-			res.status(200).json(post);
-		} catch (error) {
-			res.status(500).json({ message: "Server error", error: error });
+		const post = await prisma.post.findUnique({
+			where: { id: postIdInt },
+			include: { likes: true, dislikes: true },
+		});
+
+		if (!post) {
+			return res.status(404).json({ message: "Post not found" });
 		}
-	});
-}
+
+		const hasLiked = post.likes.some((user) => user.id === userIdInt);
+		const hasDisliked = post.dislikes.some((user) => user.id === userIdInt);
+
+		if (hasLiked) {
+			// Remove the like if it already exists
+			await prisma.post.update({
+				where: { id: postIdInt },
+				data: {
+					likes: {
+						disconnect: { id: userIdInt },
+					},
+				},
+			});
+		} else {
+			// Add the like and remove dislike if it exists
+			await prisma.post.update({
+				where: { id: postIdInt },
+				data: {
+					likes: {
+						connect: { id: userIdInt },
+					},
+					dislikes: hasDisliked
+						? { disconnect: { id: userIdInt } }
+						: undefined,
+				},
+			});
+		}
+
+		res.status(200).json({ message: "Post liked successfully" });
+	} catch (error) {
+		console.error("Error liking post:", error);
+		res.status(500).json({ message: "Server error", error: error });
+	}
+};
+
+export const dislikePost = async (req: AuthenticatedRequest, res: Response) => {
+	const { postId } = req.body;
+	const userIdInt = req.user?.id;
+
+	if (!userIdInt) {
+		return res.status(401).json({ message: "Unauthorized" });
+	}
+
+	try {
+		const postIdInt = parseInt(postId, 10);
+
+		const post = await prisma.post.findUnique({
+			where: { id: postIdInt },
+			include: { likes: true, dislikes: true },
+		});
+
+		if (!post) {
+			return res.status(404).json({ message: "Post not found" });
+		}
+
+		const hasLiked = post.likes.some((user) => user.id === userIdInt);
+		const hasDisliked = post.dislikes.some((user) => user.id === userIdInt);
+
+		if (hasDisliked) {
+			// Remove the dislike if it already exists
+			await prisma.post.update({
+				where: { id: postIdInt },
+				data: {
+					dislikes: {
+						disconnect: { id: userIdInt },
+					},
+				},
+			});
+		} else {
+			// Add the dislike and remove like if it exists
+			await prisma.post.update({
+				where: { id: postIdInt },
+				data: {
+					dislikes: {
+						connect: { id: userIdInt },
+					},
+					likes: hasLiked
+						? { disconnect: { id: userIdInt } }
+						: undefined,
+				},
+			});
+		}
+
+		res.status(200).json({ message: "Post disliked successfully" });
+	} catch (error) {
+		console.error("Error disliking post:", error);
+		res.status(500).json({ message: "Server error", error: error });
+	}
+};

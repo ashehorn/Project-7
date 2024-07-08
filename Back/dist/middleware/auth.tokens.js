@@ -23,28 +23,24 @@ const ERROR_MESSAGES = {
     TOKEN_EXPIRED: "Token has expired",
     REFRESH_ERROR: "Error refreshing token",
 };
-// Middleware to validate the access token
 const validateAccessToken = (req, res, next) => {
     const token = req.cookies.accessToken;
     if (!token) {
-        console.warn(ERROR_MESSAGES.INVALID_TOKEN);
-        return res.redirect("http://localhost:5173/login"); // Redirect to login page if no token
+        console.warn("No token provided");
+        return res.status(401).json({ message: "Unauthorized" });
     }
     try {
-        const decodedToken = jsonwebtoken_1.default.decode(token);
-        if (!isValidTokenPayload(decodedToken)) {
-            console.warn(ERROR_MESSAGES.INVALID_TOKEN_PAYLOAD);
-            return res.redirect("http://localhost:5173/login"); // Redirect to login page if invalid token payload
+        const decodedToken = jsonwebtoken_1.default.verify(token, SECRET_KEY);
+        if (!decodedToken || !decodedToken.id) {
+            console.warn("Invalid token payload");
+            return res.status(401).json({ message: "Unauthorized" });
         }
-        if (isTokenExpired(decodedToken)) {
-            console.warn(ERROR_MESSAGES.TOKEN_EXPIRED);
-            return res.redirect("http://localhost:5173/login"); // Redirect to login page if token expired
-        }
+        req.user = { id: decodedToken.id, email: decodedToken.email };
         next();
     }
     catch (error) {
-        console.warn(ERROR_MESSAGES.INVALID_TOKEN);
-        return res.redirect("http://localhost:5173/login"); // Redirect to login page if error decoding token
+        console.warn("Invalid token");
+        return res.status(401).json({ message: "Unauthorized" });
     }
 };
 exports.validateAccessToken = validateAccessToken;
