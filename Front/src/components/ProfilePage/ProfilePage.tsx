@@ -42,10 +42,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ isOpen, toggleProfilePage }) 
     const deleteUser = async () => {
         const userId = localStorage.getItem('userId');
         try {
-          await axios.delete(`http://localhost:3000/api/user${userId}`, {
+          await axios.delete(`http://localhost:3000/api/user/${userId}`, {
             withCredentials: true,
           });
-          window.location.href = '/login';
+          window.location.href = '/';
         } catch (error) {
           console.error('Error deleting user:', error);
         }
@@ -56,17 +56,16 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ isOpen, toggleProfilePage }) 
       <button onClick={toggleProfilePage} className="close-btn"><FaRegWindowClose /></button>
       <h2>Profile Page</h2>
       {user ? (
-        <div>
-          <p>Name: {user.first_name}</p>
-          <p>Last Name: {user.last_name}</p>
-          <p>Username: {user.username}</p>
-          <p>Email: {user.email}</p>
-          {/* Render more user details as needed */}
+        <div className='profile-info'>
+          <p className='user-profile-info'><span>First Name:</span> {user.first_name}</p>
+          <p className='user-profile-info'><span>Last Name:</span> {user.last_name}</p>
+          <p className='user-profile-info'><span>Username:</span> {user.username}</p>
+          <p className='user-profile-info'><span>Email:</span> {user.email}</p>
         </div>
       ) : (
         <p>Loading...</p>
       )}
-      <button onClick={deleteUser}>Delete User</button>
+      <button className='delete-user' onClick={deleteUser}>Delete User</button>
     </div>
   );
 };

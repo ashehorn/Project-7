@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
-import Logo from '../../assets/Groupomania_Logos/icon.svg'
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../components/AuthContext';
+import Logo from '../../assets/Groupomania_Logos/icon.svg';
 import './authForm.scss';
 
-export default function AuthForm() {
+const Login: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [responseMessage, setResponseMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>, type: 'login' | 'register') {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>, type: 'login' | 'register') => {
     event.preventDefault();
+
     const form = event.currentTarget;
     const formData = new FormData(form);
     const data: { [key: string]: FormDataEntryValue | null } = {
@@ -36,13 +41,14 @@ export default function AuthForm() {
       if (response.ok) {
         localStorage.setItem('userId', result.userId);
         if (type === 'login') {
-          window.location.href = 'http://localhost:5173/dashboard';
+          login();
+          navigate('/dashboard');
         } else {
           setResponseMessage(result.message || 'Registration successful!');
           setErrorMessage(null);
           setTimeout(() => {
-            setIsLogin(true); 
-          }, 2000); 
+            setIsLogin(true);
+          }, 2000);
         }
       } else {
         setErrorMessage(result.error || `${type === 'login' ? 'Login' : 'Registration'} failed. Please check your credentials and try again.`);
@@ -53,7 +59,7 @@ export default function AuthForm() {
       setResponseMessage(null);
       console.error(error);
     }
-  }
+  };
 
   return (
     <div className="auth">
@@ -91,4 +97,6 @@ export default function AuthForm() {
       </div>
     </div>
   );
-}
+};
+
+export default Login;

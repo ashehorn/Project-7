@@ -1,13 +1,63 @@
+$BackgroundColor: #181c1f;
+$inputBackgroundColor: #2b3236;
+$accentColor: #fd2d01;
+$generalTextFont: "Raleway", sans-serif;
+$headingFont: "Roboto", sans-serif;
+
 .profile-page {
     position: fixed;
-    top: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: column;
+    top: 25%;
     right: -100%;
     width: 300px;
-    height: 100%;
-    background-color: white;
-    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
-    transition: right 0.3s ease;
+    height: 50%;
+    background-color: $BackgroundColor;
+    color: #fff;
+    border-radius: 10px 10px;
+    transition: right 0.5s ease;
     z-index: 1000;
+    padding: 25px;
+    h2{
+      font-family: $headingFont;
+    }
+    .delete-user{
+      background-color: $inputBackgroundColor;
+      color: #fff;
+      width: 200px;
+      border: none;
+      outline: none;
+      padding: 10px;
+      font-family: $generalTextFont;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      &:hover{
+        background-color: $accentColor;
+        color: $BackgroundColor;
+        transition: 0.5s;
+      }
+    }
+    .profile-info{
+      font-family: $generalTextFont;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding: 10px;
+      .user-profile-info{
+        border-radius: 10px;
+        background-color: $inputBackgroundColor;
+        padding: 10px;
+        text-wrap: nowrap;
+        span{
+          text-transform: capitalize;
+          font-weight: bold;
+        }
+      }
+    }
   }
   
   .profile-page.open {
@@ -19,7 +69,8 @@
     top: 10px;
     left: 10px;
     background: none;
+    color: $accentColor;
     border: none;
-    font-size: 18px;
+    font-size: 1.5rem;
     cursor: pointer;
   }

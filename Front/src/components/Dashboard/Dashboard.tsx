@@ -6,7 +6,7 @@ import axios from 'axios';
 import { FaThumbsUp, FaThumbsDown, FaComment, FaTrash, FaEdit, FaEyeSlash } from 'react-icons/fa';
 import RelativeTime from '../Time/Time';
 import useIntersectionObserver from '../../hooks/useIntersectionObserver';
-import { markPostAsSeen, isPostSeen } from '../../../utils/postUtils'; // Importing utility functions
+import { markPostAsSeen, isPostSeen } from '../../../utils/postUtils'; 
 
 axios.interceptors.response.use(
   response => response,
@@ -60,7 +60,6 @@ const Dashboard: React.FC = () => {
         const response = await axios.get('http://localhost:3000/api/post', {
           withCredentials: true,
         });
-        console.log('Fetched posts:', response.data);
         if (Array.isArray(response.data)) {
           const updatedPosts = response.data.map((post: Post) => ({
             ...post,
@@ -288,16 +287,18 @@ const Dashboard: React.FC = () => {
                 )}
                 <div className="post-footer-icons">
                   <FaThumbsUp
+                  className='post-footer-icon'
                     onClick={() => handleLikePost(post.id)}
                     style={{ cursor: 'pointer', color: post.hasLiked ? 'blue' : 'inherit' }}
                   />
                   <p>{post.likesCount}</p>
                   <FaThumbsDown
+                    className='post-footer-icon'
                     onClick={() => handleDislikePost(post.id)}
                     style={{ cursor: 'pointer', color: post.hasDisliked ? 'red' : 'inherit' }}
                   />
                   <p>{post.dislikesCount}</p>
-                  <FaComment onClick={() => toggleComments(post.id)} style={{ cursor: 'pointer' }} />
+                  <FaComment className='post-footer-icon' onClick={() => toggleComments(post.id)} style={{ cursor: 'pointer' }} />
                 </div>
               </>
             )}

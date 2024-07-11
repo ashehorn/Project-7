@@ -36,8 +36,6 @@ export async function register(req: Request, res: Response) {
 		const { first_name, last_name, username, email, password } =
 			req.body as UserInfo;
 
-		console.log("Request body:", req.body);
-
 		if (!email) {
 			return res.status(400).json({ error: "Email is required" });
 		}
