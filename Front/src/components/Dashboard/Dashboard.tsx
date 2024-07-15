@@ -5,8 +5,7 @@ import Comments from '../Comments/Comments';
 import axios from 'axios';
 import { FaThumbsUp, FaThumbsDown, FaComment, FaTrash, FaEdit, FaEyeSlash } from 'react-icons/fa';
 import RelativeTime from '../Time/Time';
-import useIntersectionObserver from '../../hooks/useIntersectionObserver';
-import { markPostAsSeen, isPostSeen } from '../../../utils/postUtils'; 
+import { markPostAsSeen, isPostSeen } from '../../../utils/postUtils';
 
 axios.interceptors.response.use(
   response => response,
@@ -60,6 +59,7 @@ const Dashboard: React.FC = () => {
         const response = await axios.get('http://localhost:3000/api/post', {
           withCredentials: true,
         });
+        console.log('Fetched posts:', response.data);
         if (Array.isArray(response.data)) {
           const updatedPosts = response.data.map((post: Post) => ({
             ...post,
@@ -94,7 +94,7 @@ const Dashboard: React.FC = () => {
       }, {
         withCredentials: true,
       });
-
+  
       setPosts((prevPosts) =>
         prevPosts.map((post) => {
           if (post.id === postId) {
@@ -127,7 +127,7 @@ const Dashboard: React.FC = () => {
       }, {
         withCredentials: true,
       });
-
+  
       setPosts((prevPosts) =>
         prevPosts.map((post) => {
           if (post.id === postId) {
@@ -136,7 +136,7 @@ const Dashboard: React.FC = () => {
             hasLiked = post.hasLiked ? !hasLiked : post.hasLiked;
             const newDislikesCount = hasDisliked ? post.dislikesCount + 1 : post.dislikesCount - 1;
             const newLikesCount = hasLiked ? post.likesCount - 1 : post.likesCount;
-
+  
             return {
               ...post,
               dislikesCount: newDislikesCount >= 0 ? newDislikesCount : 0,
@@ -200,46 +200,20 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const observe = useIntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const postId = entry.target.getAttribute('data-post-id');
-        if (postId) {
-          markPostAsSeen(parseInt(postId, 10));
-        }
-      }
-    });
-  });
-
   const handleMarkAsSeen = (postId: number) => {
     markPostAsSeen(postId);
-    setPosts((prevPosts) => [...prevPosts]);
+    setPosts((prevPosts) => [...prevPosts]); // Force re-render to update seen status
   };
 
   return (
     <div className="dashboard">
       {Array.isArray(posts) && posts.length > 0 ? (
-        posts.map((post) => (
-          <div
-            key={post.id}
-            className="post"
-            data-post-id={post.id}
-            ref={observe}
-          >
-            {!isPostSeen(post.id) && (
-              <button
-                className="unseen-button"
-                onClick={() => handleMarkAsSeen(post.id)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-                title="Mark as seen"
-              >
-                <FaEyeSlash className="unseen-icon" />
-              </button>
-            )}
+        posts.map((post, index) => (
+          <div key={index} className="post">
             {editMode[post.id] ? (
               <div className='edit-post-container'>
                 <input
-                  className='edit-title'
+                className='edit-title'
                   type="text"
                   value={editedPost[post.id]?.title || ''}
                   onChange={(e) =>
@@ -250,7 +224,7 @@ const Dashboard: React.FC = () => {
                   }
                 />
                 <textarea
-                  className='edit-content'
+                className='edit-content'
                   value={editedPost[post.id]?.content || ''}
                   onChange={(e) =>
                     setEditedPost((prevState) => ({
@@ -269,14 +243,21 @@ const Dashboard: React.FC = () => {
                 <div className="post-header">
                   <div className='owner-info'>
                     <p id='post-owner-username'>{post.user.username}</p>
-                    <small><RelativeTime datetime={post.created_datetime}/></small>
-                  </div>
-                  {post.created_by === userId && (
-                    <div className='post-owner-actions'>
-                      <FaEdit className='action' onClick={() => handleEditPost(post.id)} style={{ cursor: 'pointer' }} />
-                      <FaTrash className='action' onClick={() => handleDeletePost(post.id)} style={{ cursor: 'pointer' }} />
-                    </div>
+                    <small><RelativeTime datetime={post.created_datetime} /></small>
+                    {!isPostSeen(post.id) && (
+                    <button className="unseen-button" onClick={() => handleMarkAsSeen(post.id)}>
+                      <FaEyeSlash className="unseen-icon" />
+                    </button>
                   )}
+                  </div>
+                  <div className='post-owner-actions'>
+                    {post.created_by === userId && (
+                      <>
+                        <FaEdit className='action' onClick={() => handleEditPost(post.id)} style={{ cursor: 'pointer' }} />
+                        <FaTrash className='action' onClick={() => handleDeletePost(post.id)} style={{ cursor: 'pointer' }} />
+                      </>
+                    )}
+                  </div>
                 </div>
                 <h2>{post.post_data.title}</h2>
                 <p className='post-content'>{post.post_data.content}</p>
@@ -287,18 +268,17 @@ const Dashboard: React.FC = () => {
                 )}
                 <div className="post-footer-icons">
                   <FaThumbsUp
-                  className='post-footer-icon'
                     onClick={() => handleLikePost(post.id)}
                     style={{ cursor: 'pointer', color: post.hasLiked ? 'blue' : 'inherit' }}
                   />
                   <p>{post.likesCount}</p>
                   <FaThumbsDown
-                    className='post-footer-icon'
                     onClick={() => handleDislikePost(post.id)}
                     style={{ cursor: 'pointer', color: post.hasDisliked ? 'red' : 'inherit' }}
                   />
                   <p>{post.dislikesCount}</p>
-                  <FaComment className='post-footer-icon' onClick={() => toggleComments(post.id)} style={{ cursor: 'pointer' }} />
+                  <FaComment onClick={() => toggleComments(post.id)} style={{ cursor: 'pointer' }} />
+                  
                 </div>
               </>
             )}

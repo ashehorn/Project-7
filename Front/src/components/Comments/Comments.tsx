@@ -97,42 +97,42 @@ function Comments({ postId }: CommentsProps) {
 
   return (
     <div className="comments">
-      <h3>Comments</h3>
-      {comments.map((comment) => (
-        <div key={comment.id} className="comment">
-          <p>{comment.content}</p>
-          {comment.mediaUrls && comment.mediaUrls.map((url, index) => (
-            <img key={index} src={url} alt="comment media" />
-          ))}
-          <small>{new Date(comment.created_datetime).toLocaleString()}</small>
-          {comment.created_by === userId && (
-            <button onClick={() => handleDeleteComment(comment.id)}>
-              <FaTrash/>
-            </button>
-          )}
-        </div>
+  <h3>Comments</h3>
+  {comments.map((comment) => (
+    <div key={comment.id} className="comment">
+      <p>{comment.content}</p>
+      {comment.mediaUrls && comment.mediaUrls.map((url, index) => (
+        <img key={index} src={url} alt="comment media" />
       ))}
-      <div className="add-comment">
-        <div className="comment-input-wrapper">
-          <input 
-            type="text" 
-            value={newComment} 
-            onChange={(e) => setNewComment(e.target.value)} 
-            placeholder="Add a comment" 
-          />
-          <label htmlFor="file-upload" className="custom-file-upload">
-            <FaPaperclip/>
-          </label>
-          <input 
-            id="file-upload" 
-            type="file" 
-            multiple 
-            onChange={handleFileChange} 
-          />
-        </div>
-        <button onClick={handleAddComment}>Comment</button>
-      </div>
+      <small>{new Date(comment.created_datetime).toLocaleString()}</small>
+      {comment.created_by === userId && (
+        <button onClick={() => handleDeleteComment(comment.id)}>
+          <FaTrash />
+        </button>
+      )}
     </div>
+  ))}
+  <div className="add-comment">
+    <div className="comment-input-wrapper">
+      <input 
+        type="text" 
+        value={newComment} 
+        onChange={(e) => setNewComment(e.target.value)} 
+        placeholder="Add a comment" 
+      />
+      <label htmlFor="file-upload" className="custom-file-upload">
+        <FaPaperclip />
+      </label>
+      <input 
+        id="file-upload" 
+        type="file" 
+        multiple 
+        onChange={handleFileChange} 
+      />
+    </div>
+    <button onClick={handleAddComment}>Comment</button>
+  </div>
+</div>
   );
 }
 
