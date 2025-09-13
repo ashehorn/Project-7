@@ -40,6 +40,7 @@ function register(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const { first_name, last_name, username, email, password } = req.body;
+            console.log("BODY:", req.body);
             if (!email) {
                 return res.status(400).json({ error: "Email is required" });
             }
