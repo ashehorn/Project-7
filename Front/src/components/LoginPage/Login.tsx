@@ -22,10 +22,10 @@ const Login: React.FC = () => {
     };
 
     if (type === 'register') {
-      data['first_name'] = formData.get('fname');
-      data['last_name'] = formData.get('lname');
-      data['username'] = formData.get('username');
-    }
+  data['first_name'] = formData.get('fname') || '';
+  data['last_name'] = formData.get('lname') || '';
+  data['username'] = formData.get('username') || '';
+}
 
     try {
       const url = type === 'login' ? 'https://groupomania-reddit-clone-back.onrender.com/api/auth/login' : 'https://groupomania-reddit-clone-back.onrender.com/api/auth/register';
