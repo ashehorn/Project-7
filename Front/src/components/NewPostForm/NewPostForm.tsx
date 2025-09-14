@@ -48,7 +48,7 @@ export default function NewPostForm() {
         }
 
         try {
-            const response = await axios.post('http://localhost:3000/api/post', formData, {
+            const response = await axios.post('https://groupomania-reddit-clone-back.onrender.com/api/post', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },

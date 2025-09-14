@@ -28,7 +28,7 @@ const Login: React.FC = () => {
     }
 
     try {
-      const url = type === 'login' ? 'http://localhost:3000/api/auth/login' : 'http://localhost:3000/api/auth/register';
+      const url = type === 'login' ? 'https://groupomania-reddit-clone-back.onrender.com/api/auth/login' : 'https://groupomania-reddit-clone-back.onrender.com/api/auth/register';
       const response = await fetch(url, {
         method: 'POST',
         headers: {

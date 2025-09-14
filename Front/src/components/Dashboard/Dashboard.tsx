@@ -56,7 +56,7 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     async function fetchPosts() {
       try {
-        const response = await axios.get('http://localhost:3000/api/post', {
+        const response = await axios.get('https://groupomania-reddit-clone-back.onrender.com/api/post', {
           withCredentials: true,
         });
         console.log('Fetched posts:', response.data);
@@ -89,7 +89,7 @@ const Dashboard: React.FC = () => {
 
   const handleLikePost = async (postId: number) => {
     try {
-      await axios.post('http://localhost:3000/api/post/like', {
+      await axios.post('https://groupomania-reddit-clone-back.onrender.com/api/post/like', {
         postId,
       }, {
         withCredentials: true,
@@ -122,7 +122,7 @@ const Dashboard: React.FC = () => {
 
   const handleDislikePost = async (postId: number) => {
     try {
-      await axios.post('http://localhost:3000/api/post/dislike', {
+      await axios.post('https://groupomania-reddit-clone-back.onrender.com/api/post/dislike', {
         postId,
       }, {
         withCredentials: true,
@@ -155,7 +155,7 @@ const Dashboard: React.FC = () => {
 
   const handleDeletePost = async (postId: number) => {
     try {
-      await axios.delete(`http://localhost:3000/api/post/${postId}`, {
+      await axios.delete(`https://groupomania-reddit-clone-back.onrender.com/api/post/${postId}`, {
         withCredentials: true,
       });
 
@@ -181,7 +181,7 @@ const Dashboard: React.FC = () => {
 
   const handleSavePost = async (postId: number) => {
     try {
-      await axios.put(`http://localhost:3000/api/post/${postId}`, editedPost[postId], {
+      await axios.put(`https://groupomania-reddit-clone-back.onrender.com/api/post/${postId}`, editedPost[postId], {
         withCredentials: true,
       });
 

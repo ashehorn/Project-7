@@ -25,7 +25,7 @@ function Comments({ postId }: CommentsProps) {
   useEffect(() => {
     async function fetchComments() {
       try {
-        const response = await axios.get(`http://localhost:3000/api/comment/${postId}`, {
+        const response = await axios.get(`https://groupomania-reddit-clone-back.onrender.com/api/comment/${postId}`, {
           withCredentials: true,
         });
         setComments(response.data);
@@ -49,7 +49,7 @@ function Comments({ postId }: CommentsProps) {
     });
 
     try {
-      const response = await axios.post('http://localhost:3000/api/comment', formData, {
+      const response = await axios.post('https://groupomania-reddit-clone-back.onrender.com/api/comment', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -60,7 +60,7 @@ function Comments({ postId }: CommentsProps) {
 
       const mediaUrls = await Promise.all(
         newCommentData.media.map(async (media: { media: string }) => {
-          const urlResponse = await axios.get(`http://localhost:3000/api/comment/media-url/${media.media}`);
+          const urlResponse = await axios.get(`https://groupomania-reddit-clone-back.onrender.com/api/comment/media-url/${media.media}`);
           return urlResponse.data.url;
         })
       );
@@ -85,7 +85,7 @@ function Comments({ postId }: CommentsProps) {
 
   const handleDeleteComment = async (commentId: number) => {
     try {
-      await axios.delete(`http://localhost:3000/api/comment/${commentId}`, {
+      await axios.delete(`https://groupomania-reddit-clone-back.onrender.com/api/comment/${commentId}`, {
         withCredentials: true,
       });
 

@@ -15,7 +15,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleProfilePage }) => {
 
   const handleLogout = async () => {
     try {
-      const response = await axios.post('http://localhost:3000/api/user/logout', {}, { withCredentials: true });
+      const response = await axios.post('https://groupomania-reddit-clone-back.onrender.com/api/user/logout', {}, { withCredentials: true });
       if (response.status === 200) {
         logout();
         navigate('/');

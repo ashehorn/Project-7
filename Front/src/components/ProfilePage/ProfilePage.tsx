@@ -27,7 +27,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ isOpen, toggleProfilePage }) 
         return;
       }
       try {
-        const response = await axios.get<User>(`http://localhost:3000/api/user/${userId}`, {
+        const response = await axios.get<User>(`https://groupomania-reddit-clone-back.onrender.com/api/user/${userId}`, {
           withCredentials: true,
         });
         setUser(response.data);
@@ -50,7 +50,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ isOpen, toggleProfilePage }) 
     }
     console.log('Attempting to delete user with ID:', userId); // Log userId
     try {
-      await axios.delete(`http://localhost:3000/api/user/${userId}`, {
+      await axios.delete(`https://groupomania-reddit-clone-back.onrender.com/api/user/${userId}`, {
         withCredentials: true,
       });
       console.log('User deleted successfully');
