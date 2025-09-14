@@ -33,6 +33,8 @@ async function hash(password: string): Promise<string> {
 
 export async function register(req: Request, res: Response) {
 	try {
+		console.log("✅ Hit /register route");
+  		console.log("📦 req.body =", req.body);
 		const { first_name, last_name, username, email, password } =
 			req.body as UserInfo;
 
