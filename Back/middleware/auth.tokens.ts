@@ -108,7 +108,7 @@ export async function create(res: Response, user: any) {
 
 	return res.cookie("accessToken", accessToken, {
 		httpOnly: true,
-		sameSite: "strict",
+		sameSite: "none",
 		secure: true,
 	});
 }
